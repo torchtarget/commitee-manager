@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Literal, Optional
 
 import yaml
 
+from committee_manager.rules import Rule, build_rules
+
 
 @dataclass
 class RuleDefinition:
@@ -81,3 +83,9 @@ def load_rules(path: str) -> List[RuleDefinition]:
         rules.append(_validate_rule(idx, item))
 
     return rules
+
+
+def load_rule_objects(path: str) -> List[Rule]:
+    """Load rule objects from a YAML file."""
+    definitions = load_rules(path)
+    return build_rules(definitions)
