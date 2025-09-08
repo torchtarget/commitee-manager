@@ -12,8 +12,6 @@ from committee_manager.models.committee import Committee
 from committee_manager.rules.base import HardRule, SoftRule
 from committee_manager.reporting import export_yaml, export_csv
 
-Person.__hash__ = object.__hash__
-
 
 class CapacityRule(HardRule):
     def check(self, person: Person, committee: Committee) -> bool:  # pragma: no cover - simple pass-through
