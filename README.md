@@ -5,7 +5,66 @@ A **personal, offline** Python tool that **allocates people to committees** unde
 - **Primary user**: a single decision-maker  
 - **Scale**: ~60 people, ~25 committees, ~10 rules  
 - **Output**: a complete proposed allocation + per-seat rationales + committee health summaries  
-- **Interaction model**: run scenarios, optionally lock some choices, tweak rule weights, re-allocate, compare  
+- **Interaction model**: run scenarios, optionally lock some choices, tweak rule weights, re-allocate, compare
+
+---
+
+## Setup
+
+1. Create a virtual environment and install the package:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+2. Run the tests to verify the installation:
+
+```bash
+pytest
+```
+
+### Sample Data
+
+**people.csv**
+
+```
+name,service_cap,competencies
+Alice,2,finance;strategy
+Bob,1,
+```
+
+**committees.csv**
+
+```
+name,min_size,max_size,required_competencies
+Finance,1,2,finance
+```
+
+**rules.yaml**
+
+```
+- name: service_cap
+  kind: hard
+  priority: 1
+  params: {}
+  explain_exclude: "{person.name} is at capacity"
+```
+
+### CLI Usage
+
+Run the allocator over the data files:
+
+```bash
+python -m committee_manager.cli.main allocate \
+    --people people.csv \
+    --committees committees.csv \
+    --rules rules.yaml \
+    --output output_dir
+```
+
+The command writes `allocation.yaml` and `rationale.yaml` to `output_dir`.
 
 ---
 
