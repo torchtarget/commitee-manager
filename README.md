@@ -83,6 +83,16 @@ python -m committee_manager.cli.main allocate --people examples/people.csv --com
 
 The command writes `allocation.yaml` and `rationale.yaml` to `output_dir`.
 
+### Web Application
+
+Run a minimal web interface for uploading input files and viewing the resulting allocation:
+
+```bash
+python -m committee_manager.web.app
+```
+
+Visit <http://localhost:5000/> in a browser and upload your CSV/YAML files to generate an allocation.
+
 ---
 
 ## 1. Scope & Philosophy
