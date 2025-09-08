@@ -1,7 +1,9 @@
 """Minimal Flask application exposing the allocator via a web form."""
 from __future__ import annotations
 
+import csv
 import os
+from io import StringIO
 from pathlib import Path
 from typing import Dict, List
 
@@ -11,7 +13,6 @@ from ..engine.allocator import Allocator
 from ..io.committee_loader import load_committees
 from ..io.people_loader import load_people
 from ..io.rule_loader import load_rule_objects
-from ..reporting.rationale import export_yaml
 
 app = Flask(__name__)
 
@@ -30,25 +31,94 @@ def _ensure_inputs_populated() -> None:
 EDIT_TEMPLATE = """
 <!doctype html>
 <title>Edit Inputs</title>
-<h1>Edit People</h1>
-<form method=post>
+<form method=post onsubmit="prepareData()">
   <input type=hidden name="people_path" value="{{ people_path }}">
   <input type=hidden name="committees_path" value="{{ committees_path }}">
   <input type=hidden name="rules_path" value="{{ rules_path }}">
-  <textarea name=people_content rows=10 cols=80>{{ people }}</textarea>
+
+  <h1>Edit People</h1>
+  <table id="people_table" border="1">
+    {% for row in people_rows %}
+    <tr>
+      {% for cell in row %}
+      <td><input type="text" value="{{ cell }}"></td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+  <button type="button" onclick="addRow('people_table')">Add Row</button>
+
   <h1>Edit Committees</h1>
-  <textarea name=committees_content rows=10 cols=80>{{ committees }}</textarea><br>
-  <input type=submit value="Allocate">
+  <table id="committees_table" border="1">
+    {% for row in committees_rows %}
+    <tr>
+      {% for cell in row %}
+      <td><input type="text" value="{{ cell }}"></td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+  <button type="button" onclick="addRow('committees_table')">Add Row</button>
+
+  <input type=hidden name="people_content" id="people_content">
+  <input type=hidden name="committees_content" id="committees_content">
+  <p><input type=submit value="Allocate"></p>
 </form>
+
+<script>
+function addRow(id) {
+  const table = document.getElementById(id);
+  const cols = table.rows[0] ? table.rows[0].cells.length : 1;
+  const row = table.insertRow();
+  for (let i=0; i<cols; i++) {
+    const cell = row.insertCell();
+    cell.innerHTML = '<input type="text">';
+  }
+}
+
+function tableToCSV(id) {
+  const rows = Array.from(document.getElementById(id).rows);
+  return rows.map(r => Array.from(r.cells).map(c => c.firstChild.value).join(',')).join('\n');
+}
+
+function prepareData() {
+  document.getElementById('people_content').value = tableToCSV('people_table');
+  document.getElementById('committees_content').value = tableToCSV('committees_table');
+}
+</script>
 """
 
 RESULT_TEMPLATE = """
 <!doctype html>
 <title>Allocation Result</title>
 <h1>Allocation</h1>
-<pre>{{ allocation }}</pre>
-<h1>Rationale</h1>
-<pre>{{ rationale }}</pre>
+<table border="1">
+  <tr><th>Committee</th><th>Member</th><th>Rationale</th></tr>
+  {% for committee in result.committees %}
+    {% for member in committee.members %}
+      <tr>
+        <td>{{ committee.name }}</td>
+        <td>{{ member.name }}</td>
+        <td>{{ rationales.get((committee.name, member.name), '') }}</td>
+      </tr>
+    {% endfor %}
+  {% endfor %}
+</table>
+
+<h1>Committee Health</h1>
+<table border="1">
+  <tr><th>Committee</th><th>Size</th><th>Min</th><th>Max</th><th>Missing Competencies</th></tr>
+  {% for name, health in result.committee_health.items() %}
+    <tr>
+      <td>{{ name }}</td>
+      <td>{{ health['size'] }}</td>
+      <td>{{ health['min_size'] }}</td>
+      <td>{{ health['max_size'] }}</td>
+      <td>{{ ', '.join(health['missing_competencies']) }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
 <p><a href="/">Back</a></p>
 """
 
@@ -83,18 +153,8 @@ def allocate() -> str:
         Allocator.local_improvements(committees_list, people_list, rationales)
         result = Allocator.package_result(committees_list, rationales)
 
-        tmpdir = os.path.dirname(people_path)
-        allocation_file = os.path.join(tmpdir, "allocation.yaml")
-        rationale_file = os.path.join(tmpdir, "rationale.yaml")
-        export_yaml(result, allocation_file, rationale_file)
-
-        with open(allocation_file, "r", encoding="utf8") as handle:
-            allocation = handle.read()
-        with open(rationale_file, "r", encoding="utf8") as handle:
-            rationale = handle.read()
-
         return render_template_string(
-            RESULT_TEMPLATE, allocation=allocation, rationale=rationale
+            RESULT_TEMPLATE, result=result, rationales=rationales
         )
 
     people_path = INPUT_DIR / "people.csv"
@@ -105,10 +165,15 @@ def allocate() -> str:
         committees_path.read_text(encoding="utf8") if committees_path.exists() else ""
     )
 
+    people_rows = list(csv.reader(StringIO(people_text))) if people_text else [[""]]
+    committees_rows = (
+        list(csv.reader(StringIO(committees_text))) if committees_text else [[""]]
+    )
+
     return render_template_string(
         EDIT_TEMPLATE,
-        people=people_text,
-        committees=committees_text,
+        people_rows=people_rows,
+        committees_rows=committees_rows,
         people_path=str(people_path),
         committees_path=str(committees_path),
         rules_path=str(rules_path) if rules_path.exists() else "",
