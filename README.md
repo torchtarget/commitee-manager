@@ -25,43 +25,60 @@ pip install -e .
 pytest
 ```
 
+
 ### Sample Data
+
+Sample CSV and YAML files are provided in the `examples/` directory:
 
 **people.csv**
 
-```
+```csv
 name,service_cap,competencies
 Alice,2,finance;strategy
 Bob,1,
+Carol,1,strategy
+Dave,1,finance
 ```
 
 **committees.csv**
 
-```
+```csv
 name,min_size,max_size,required_competencies
 Finance,1,2,finance
+Strategy,1,2,strategy
+Operations,1,1,
 ```
 
 **rules.yaml**
 
-```
+```yaml
 - name: service_cap
   kind: hard
   priority: 1
   params: {}
   explain_exclude: "{person.name} is at capacity"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  params:
+    competency: finance
+  explain_score: "{person.name} has finance competency"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  params:
+    competency: strategy
+  explain_score: "{person.name} has strategy competency"
 ```
 
 ### CLI Usage
 
-Run the allocator over the data files:
+Run the allocator over the sample files:
 
 ```bash
-python -m committee_manager.cli.main allocate \
-    --people people.csv \
-    --committees committees.csv \
-    --rules rules.yaml \
-    --output output_dir
+python -m committee_manager.cli.main allocate --people examples/people.csv --committees examples/committees.csv --rules examples/rules.yaml --output output_dir
 ```
 
 The command writes `allocation.yaml` and `rationale.yaml` to `output_dir`.

@@ -1,0 +1,19 @@
+- name: service_cap
+  kind: hard
+  priority: 1
+  params: {}
+  explain_exclude: "{person.name} is at capacity"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  params:
+    competency: finance
+  explain_score: "{person.name} has finance competency"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  params:
+    competency: strategy
+  explain_score: "{person.name} has strategy competency"
