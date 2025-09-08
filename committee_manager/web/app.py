@@ -31,6 +31,11 @@ def _ensure_inputs_populated() -> None:
 EDIT_TEMPLATE = """
 <!doctype html>
 <title>Edit Inputs</title>
+<style>
+  table { border-collapse: collapse; }
+  th, td { padding: 4px; }
+  input { width: 100%; box-sizing: border-box; }
+</style>
 <form method=post onsubmit="prepareData()">
   <input type=hidden name="people_path" value="{{ people_path }}">
   <input type=hidden name="committees_path" value="{{ committees_path }}">
@@ -38,25 +43,39 @@ EDIT_TEMPLATE = """
 
   <h1>Edit People</h1>
   <table id="people_table" border="1">
-    {% for row in people_rows %}
-    <tr>
-      {% for cell in row %}
-      <td><input type="text" value="{{ cell }}"></td>
+    <thead>
+      <tr>
+        {% for head in people_header %}<th>{{ head }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in people_rows %}
+      <tr>
+        {% for cell in row %}
+        <td><input type="text" value="{{ cell }}"></td>
+        {% endfor %}
+      </tr>
       {% endfor %}
-    </tr>
-    {% endfor %}
+    </tbody>
   </table>
   <button type="button" onclick="addRow('people_table')">Add Row</button>
 
   <h1>Edit Committees</h1>
   <table id="committees_table" border="1">
-    {% for row in committees_rows %}
-    <tr>
-      {% for cell in row %}
-      <td><input type="text" value="{{ cell }}"></td>
+    <thead>
+      <tr>
+        {% for head in committees_header %}<th>{{ head }}</th>{% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in committees_rows %}
+      <tr>
+        {% for cell in row %}
+        <td><input type="text" value="{{ cell }}"></td>
+        {% endfor %}
+      </tr>
       {% endfor %}
-    </tr>
-    {% endfor %}
+    </tbody>
   </table>
   <button type="button" onclick="addRow('committees_table')">Add Row</button>
 
@@ -68,17 +87,28 @@ EDIT_TEMPLATE = """
 <script>
 function addRow(id) {
   const table = document.getElementById(id);
-  const cols = table.rows[0] ? table.rows[0].cells.length : 1;
-  const row = table.insertRow();
-  for (let i=0; i<cols; i++) {
+  const cols = table.tHead.rows[0].cells.length;
+  const row = table.tBodies[0].insertRow();
+  for (let i = 0; i < cols; i++) {
     const cell = row.insertCell();
     cell.innerHTML = '<input type="text">';
   }
 }
 
 function tableToCSV(id) {
-  const rows = Array.from(document.getElementById(id).rows);
-  return rows.map(r => Array.from(r.cells).map(c => c.firstChild.value).join(',')).join('\n');
+  const table = document.getElementById(id);
+  const rows = Array.from(table.rows);
+  const lines = [];
+  for (const r of rows) {
+    const cells = Array.from(r.cells).map(c => {
+      const input = c.querySelector('input');
+      return input ? input.value : c.textContent;
+    });
+    if (r.rowIndex === 0 || cells.some(v => v.trim() !== '')) {
+      lines.push(cells.join(','));
+    }
+  }
+  return lines.join('\n');
 }
 
 function prepareData() {
@@ -165,14 +195,38 @@ def allocate() -> str:
         committees_path.read_text(encoding="utf8") if committees_path.exists() else ""
     )
 
-    people_rows = list(csv.reader(StringIO(people_text))) if people_text else [[""]]
-    committees_rows = (
-        list(csv.reader(StringIO(committees_text))) if committees_text else [[""]]
-    )
+    if people_text:
+        people_data = list(csv.reader(StringIO(people_text)))
+        people_header = people_data[0] if people_data else []
+        people_rows = people_data[1:] if len(people_data) > 1 else []
+    else:
+        people_header = ["name", "service_cap", "competencies"]
+        people_rows = [[]]
+    if not people_rows or not people_rows[0]:
+        people_rows = [["" for _ in people_header]]
+
+    if committees_text:
+        committee_data = list(csv.reader(StringIO(committees_text)))
+        committees_header = committee_data[0] if committee_data else []
+        committees_rows = committee_data[1:] if len(committee_data) > 1 else []
+    else:
+        committees_header = [
+            "name",
+            "min_size",
+            "max_size",
+            "required_competencies",
+            "exclusions",
+            "diversity_targets",
+        ]
+        committees_rows = [[]]
+    if not committees_rows or not committees_rows[0]:
+        committees_rows = [["" for _ in committees_header]]
 
     return render_template_string(
         EDIT_TEMPLATE,
+        people_header=people_header,
         people_rows=people_rows,
+        committees_header=committees_header,
         committees_rows=committees_rows,
         people_path=str(people_path),
         committees_path=str(committees_path),
