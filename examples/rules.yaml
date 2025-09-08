@@ -7,6 +7,23 @@
   kind: soft
   priority: 2
   weight: 1
+  applies_to: ["Audit"]
+  params:
+    competency: audit
+  explain_score: "{person.name} brings audit expertise"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Compliance"]
+  params:
+    competency: compliance
+  explain_score: "{person.name} brings compliance expertise"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Finance"]
   params:
     competency: finance
   explain_score: "{person.name} has finance competency"
@@ -14,6 +31,55 @@
   kind: soft
   priority: 2
   weight: 1
+  applies_to: ["HR"]
+  params:
+    competency: hr
+  explain_score: "{person.name} has HR experience"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Innovation"]
+  params:
+    competency: innovation
+  explain_score: "{person.name} contributes innovation skills"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Marketing"]
+  params:
+    competency: marketing
+  explain_score: "{person.name} has marketing expertise"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Operations"]
+  params:
+    competency: operations
+  explain_score: "{person.name} understands operations"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Risk"]
+  params:
+    competency: risk
+  explain_score: "{person.name} adds risk awareness"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Strategy"]
   params:
     competency: strategy
-  explain_score: "{person.name} has strategy competency"
+  explain_score: "{person.name} has strategy insight"
+- name: has_competency
+  kind: soft
+  priority: 2
+  weight: 1
+  applies_to: ["Technology"]
+  params:
+    competency: technology
+  explain_score: "{person.name} provides technology expertise"

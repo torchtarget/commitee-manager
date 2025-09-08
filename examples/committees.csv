@@ -1,4 +1,11 @@
 name,min_size,max_size,required_competencies
-Finance,1,2,finance
-Strategy,1,2,strategy
-Operations,1,1,
+Audit,3,5,audit
+Compliance,3,5,compliance
+Finance,3,5,finance
+HR,3,5,hr
+Innovation,3,5,innovation
+Marketing,3,5,marketing
+Operations,3,5,operations
+Risk,3,5,risk
+Strategy,3,5,strategy
+Technology,3,5,technology
