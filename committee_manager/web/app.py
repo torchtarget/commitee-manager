@@ -94,4 +94,5 @@ def create_app() -> Flask:
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Bind to all interfaces to allow remote access when running the app directly.
+    app.run(debug=True, host="0.0.0.0")
