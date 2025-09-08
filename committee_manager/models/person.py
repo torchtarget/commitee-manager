@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Set
 
 
-@dataclass
+@dataclass(eq=False)
 class Person:
     """Represents an individual available for committee service."""
 

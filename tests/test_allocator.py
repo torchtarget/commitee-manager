@@ -9,9 +9,6 @@ from committee_manager.engine.allocator import Allocator
 from committee_manager.models.person import Person
 from committee_manager.models.committee import Committee
 
-# Ensure hashability for set operations
-Person.__hash__ = object.__hash__
-
 
 def test_precheck_feasibility_errors():
     alice = Person(name="Alice", service_cap=0)
