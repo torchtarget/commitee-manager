@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "A package for managing committees."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = "MIT"
 authors = [{name = "Example Author", email = "author@example.com"}]
 dependencies = ["PyYAML", "Flask"]
+
+[tool.setuptools.packages.find]
+include = ["committee_manager*"]
