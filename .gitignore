@@ -12,6 +12,8 @@ build/
 develop-eggs/
 dist/
 output_dir/
+inputs/*
+!inputs/.gitkeep
 downloads/
 eggs/
 .eggs/

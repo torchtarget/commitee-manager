@@ -85,13 +85,15 @@ The command writes `allocation.yaml` and `rationale.yaml` to `output_dir`.
 
 ### Web Application
 
-Run a minimal web interface for uploading input files and viewing the resulting allocation:
+Run a minimal web interface that loads files from the `inputs/` folder and
+shows them for editing before allocation:
 
 ```bash
 python -m committee_manager.web.app
 ```
 
-Visit <http://localhost:5000/> in a browser and upload your CSV/YAML files to generate an allocation.
+Visit <http://localhost:5000/> in a browser to view the files in `inputs/` and
+generate an allocation without uploading.
 
 ---
 
