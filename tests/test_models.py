@@ -14,6 +14,17 @@ def test_person_service_cap_validation():
         Person(name="Alice", service_cap=-1)
 
 
+def test_person_age_validation():
+    with pytest.raises(ValueError):
+        Person(name="Alice", age=-1)
+
+
+def test_person_normalization():
+    person = Person(name="Alice", sex=" Female ", family_branch=" North ")
+    assert person.sex == "female"
+    assert person.family_branch == "north"
+
+
 def test_committee_size_validation():
     with pytest.raises(ValueError):
         Committee(name="Test", min_size=2, max_size=1)
